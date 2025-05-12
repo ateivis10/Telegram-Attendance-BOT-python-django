@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Table</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #F4F9FD;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            height: 100vh;
+            background-color: #ECF3FF;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px 15px;
+            margin: 10px 0;
+            background-color: #dce6f9;
+            text-decoration: none;
+            color: #000;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .sidebar a:hover {
+            background-color: #c2d8f3;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .content-box {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 15px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        /* Filter form */
+        .filter-form {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-form input,
+        .filter-form button,
+        .filter-form a {
+            margin: 0 5px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .filter-form button {
+            background-color: #ECF3FF;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .filter-form a {
+            background-color: #f8f8f8;
+            text-decoration: none;
+            color: #000;
+        }
+
+        /* Pagination */
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination a,
+        .pagination strong {
+            margin: 0 5px;
+            padding: 6px 12px;
+            background-color: #ECF3FF;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .pagination a:hover {
+            background-color: #c2d8f3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Menu</h2>
+        <a href="{% url 'attendance_table' %}">Attendance</a>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <div class="content-box">
+
+            <!-- Filter form -->
+            <form method="get" class="filter-form">
+                <input type="text" name="employee" placeholder="Search by employee" value="{{ request.GET.employee }}">
+                <input type="date" name="date" value="{{ request.GET.date }}">
+                <button type="submit">Filter</button>
+                <a href="{% url 'attendance_table' %}">Reset</a>
+            </form>
+
+            <h2>Employee Attendance Table</h2>
+
+            <!-- Attendance table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in page_obj %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.employee.full_name }}</td>
+                        <td>{{ record.check_in|date:"h:i A" }}</td>
+                        <td>
+                            {% if record.check_out %}
+                                {{ record.check_out|date:"h:i A" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ record.formatted_duration }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if request.GET.employee %}&employee={{ request.GET.employee }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.employee %}&employee={{ request.GET.employee }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">Previous</a>
+                {% endif %}
+
+                <strong>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</strong>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.employee %}&employee={{ request.GET.employee }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.employee %}&employee={{ request.GET.employee }}{% endif %}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}">Last</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
